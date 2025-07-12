@@ -5,12 +5,14 @@ import certifi
 import aiohttp
 from dotenv import load_dotenv
 from lmnt.api import Speech
+import weave
 
 # Load environment variables
 load_dotenv()
 
 LMNT_API_KEY = os.getenv("LMNT_API_KEY")
 
+@weave.op()
 async def generate_voice(text: str, output_path: str, voice_id: str = "brandon", format: str = "wav") -> str:
     """
     Generate voice audio from text using LMNT API.
@@ -85,6 +87,7 @@ async def generate_voice(text: str, output_path: str, voice_id: str = "brandon",
             print(f"✗ Error generating voice: {e2}")
             return None
 
+@weave.op()
 async def list_available_voices():
     """
     List all available voices from LMNT API.
@@ -99,6 +102,7 @@ async def list_available_voices():
         voices = await speech.list_voices()
         return voices
 
+@weave.op()
 async def get_voice_info(voice_id: str):
     """
     Get information about a specific voice.

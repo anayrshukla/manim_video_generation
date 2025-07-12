@@ -3,6 +3,7 @@ import os
 import json
 from pathlib import Path
 import warnings
+import weave
 
 # MoviePy imports
 from moviepy import VideoFileClip, AudioFileClip, concatenate_videoclips, ImageClip
@@ -13,6 +14,7 @@ from manim_generator import generate_manim_clips
 from voice_gen import generate_voice
 
 
+@weave.op()
 def combine_video_with_audio_sync(video_path: str, audio_path: str, output_path: str) -> str:
     """Combine video with audio using MoviePy."""
     try:
@@ -44,6 +46,7 @@ def combine_video_with_audio_sync(video_path: str, audio_path: str, output_path:
         return video_path
 
 
+@weave.op()
 def stitch_videos(video_paths: list, output_path: str = "summary_video.mp4") -> str:
     """Stitch multiple video files together."""
     try:
@@ -71,7 +74,8 @@ def stitch_videos(video_paths: list, output_path: str = "summary_video.mp4") -> 
         raise
 
 
-async def generate_summary_video(pdf_url: str) -> str:
+@weave.op()
+async def generate_summary_video(pdf_url: str) -> dict:
     """Generate a 1-minute summary video from a PDF URL."""
     print(f"📄 Processing PDF: {pdf_url}")
     
@@ -106,6 +110,10 @@ async def generate_summary_video(pdf_url: str) -> str:
     
     video_paths = await generate_manim_clips(clips, output_dir, "medium_quality")
     
+    # Track video generation metrics
+    successful_clips = 0
+    failed_clips = 0
+    
     # Add voice-over to each clip (with fallback to silent video)
     final_clips = []
     for i, (clip_config, video_path) in enumerate(zip(clips, video_paths)):
@@ -120,18 +128,23 @@ async def generate_summary_video(pdf_url: str) -> str:
                         final_path = f"{output_dir}/final_{i}.mp4"
                         combined_path = combine_video_with_audio_sync(video_path, audio_path, final_path)
                         final_clips.append(combined_path)
+                        successful_clips += 1
                         print(f"✓ Clip {i+1} with voice-over")
                     else:
                         final_clips.append(video_path)
+                        successful_clips += 1
                         print(f"✓ Clip {i+1} (silent - voice failed)")
                 else:
                     final_clips.append(video_path)
+                    successful_clips += 1
                     print(f"✓ Clip {i+1} (silent)")
             except Exception as e:
                 print(f"Voice generation failed for clip {i+1}: {e}")
                 final_clips.append(video_path)
+                successful_clips += 1
                 print(f"✓ Clip {i+1} (silent - voice failed)")
         else:
+            failed_clips += 1
             print(f"✗ Clip {i+1} failed to generate")
     
     if not final_clips:
@@ -141,11 +154,24 @@ async def generate_summary_video(pdf_url: str) -> str:
     final_video = stitch_videos(final_clips, "summary_video.mp4")
     
     print(f"✅ Summary video created: {final_video}")
-    return final_video
+    
+    # Return comprehensive results for Weave tracking
+    return {
+        "video_path": final_video,
+        "total_clips": len(clips),
+        "successful_clips": successful_clips,
+        "failed_clips": failed_clips,
+        "success_rate": successful_clips / len(clips) if clips else 0,
+        "pdf_url": pdf_url,
+        "clips_config": clips
+    }
 
 
 def main():
     """Simple main function - just ask for URL and generate video."""
+    # Initialize Weave tracking
+    weave.init("manim_video_generator")
+    
     print("🎬 PDF to Video Summary Generator")
     print("=" * 40)
     
@@ -163,11 +189,12 @@ def main():
     print(f"🚀 Generating 1-minute summary video from: {pdf_url}")
     
     try:
-        # Generate the video
-        video_path = asyncio.run(generate_summary_video(pdf_url))
+        # Generate the video with full tracking
+        result = asyncio.run(generate_summary_video(pdf_url))
         
-        print(f"🎉 Done! Video saved as: {video_path}")
-        print(f"📁 Full path: {os.path.abspath(video_path)}")
+        print(f"🎉 Done! Video saved as: {result['video_path']}")
+        print(f"📁 Full path: {os.path.abspath(result['video_path'])}")
+        print(f"📊 Success rate: {result['success_rate']:.1%} ({result['successful_clips']}/{result['total_clips']} clips)")
         
     except Exception as e:
         print(f"❌ Error: {e}")

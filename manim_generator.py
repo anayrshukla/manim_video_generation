@@ -5,7 +5,9 @@ import tempfile
 import json
 from typing import List, Dict, Any
 from pathlib import Path
+import weave
 
+@weave.op()
 async def generate_manim_video(code: str, output_dir: str = "output", clip_name: str = None, quality: str = "medium_quality") -> str:
     """
     Generate a video from Manim code asynchronously.
@@ -91,7 +93,8 @@ async def generate_manim_video(code: str, output_dir: str = "output", clip_name:
         if os.path.exists(temp_file_path):
             os.unlink(temp_file_path)
 
-async def generate_manim_clips(clips_config: List[Dict[str, Any]], output_dir: str = "output", quality: str = "medium_quality") -> List[str]:
+@weave.op()
+async def generate_manim_clips(clips_config: List[Dict[str, Any]], output_dir: str = "clips", quality: str = "medium_quality") -> List[str]:
     """
     Generate multiple Manim clips sequentially (to avoid resource conflicts).
     

@@ -3,6 +3,8 @@ import os
 import dotenv
 import base64
 import httpx
+import weave
+
 # Load environment variables from .env file
 dotenv.load_dotenv()
 
@@ -63,6 +65,7 @@ Return ONLY this JSON (no other text):
 }
 """
 
+@weave.op()
 def generate_video_config(pdf_path, use_base64=False):
     """Generate video configuration from PDF using Claude AI"""
     
