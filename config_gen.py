@@ -12,44 +12,52 @@ client = anthropic.Anthropic(
     api_key=API_KEY
 )
 
-prompt = """Imagine you are 3 Blue 1 Brown himself, an incredible teacher and instructor.
-From this research paper, generate a JSON object for an educational video that is a list of clips.
-Each clip should be of type "manim" with Python code to generate educational animations using Manim.
+prompt = """You are an expert educational content creator like 3Blue1Brown. 
+From this research paper, generate a JSON object for a 45-60 second educational video that breaks down the key concepts step by step.
 
-CRITICAL REQUIREMENTS:
+Create exactly 4-5 clips that together form a complete mini-lesson:
+
+TIMING & STRUCTURE:
+- Total duration: 45-60 seconds
+- Clip 1 (10-12s): Introduction/Hook - What problem does this solve?
+- Clip 2 (10-12s): Core Concept - The main idea explained simply
+- Clip 3 (10-12s): How It Works - The mechanism/process
+- Clip 4 (10-12s): Impact/Results - Why it matters
+- Clip 5 (optional, 5-8s): Quick summary/takeaway
+
+EDUCATIONAL REQUIREMENTS:
+- Start with a hook that grabs attention
+- Build concepts progressively (simple → complex)
+- Use analogies and visual metaphors
+- End with clear impact/significance
+- Make it accessible but not dumbed down
+
+TECHNICAL CONSTRAINTS:
 - Only use basic Manim objects: Circle, Square, Rectangle, Line, Arrow, Dot, Text
-- DO NOT use SVGMobject, DecimalNumber, or any LaTeX-dependent objects
-- DO NOT reference external files like .svg, .png, .jpg
-- Keep animations simple and clean
-- Use only built-in Manim colors like RED, BLUE, GREEN, YELLOW, WHITE
-- Each clip should be 10-15 seconds long
-- Focus on key concepts from the paper using simple geometric visualizations
+- DO NOT use SVGMobject, DecimalNumber, or LaTeX-dependent objects
+- DO NOT reference external files (.svg, .png, .jpg)
+- Use built-in colors: RED, BLUE, GREEN, YELLOW, WHITE, ORANGE, PURPLE
+- Keep animations smooth and purposeful
 
-Example of GOOD code:
-```python
-class ExampleScene(Scene):
-    def construct(self):
-        title = Text("Research Title", font_size=48)
-        circle = Circle(radius=2, color=BLUE)
-        self.play(Write(title))
-        self.play(Create(circle))
-        self.wait(2)
-```
+VOICE-OVER STYLE:
+- Conversational but authoritative
+- Clear, concise explanations
+- Natural pacing with pauses
+- Connect each clip to the next
 
-Example of BAD code (DO NOT USE):
-```python
-# DON'T USE: SVGMobject('robot.svg')
-# DON'T USE: DecimalNumber(0)
-# DON'T USE: MathTex("\\frac{1}{2}")
-```
+Example structure:
+Clip 1: "Imagine you're trying to [relatable problem]..."
+Clip 2: "Here's the key insight: [main concept]..."
+Clip 3: "The way this works is [mechanism]..."
+Clip 4: "This breakthrough means [impact]..."
 
-Simply return the JSON object of this schema (no other text, no code blocks):
+Return ONLY this JSON (no other text):
 {
     "clips": [
         {
             "type": "manim",
-            "code": "string",
-            "voice_over": "string"
+            "code": "class SceneN(Scene):\n    def construct(self):\n        # 10-12 second animation",
+            "voice_over": "Educational narration that flows naturally"
         }
     ]
 }
