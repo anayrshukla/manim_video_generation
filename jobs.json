@@ -167,5 +167,85 @@
         }
       ]
     }
+  },
+  "9d74d549-c9bd-41e9-9c86-aea7ddaaefcf": {
+    "job_id": "9d74d549-c9bd-41e9-9c86-aea7ddaaefcf",
+    "status": "completed",
+    "created_at": "2025-07-12T18:11:01.567034",
+    "pdf_source": "uploads/8f9d556a-1e39-4954-901c-50f5211a77ef_2507.07980v1.pdf",
+    "original_filename": "2507.07980v1.pdf",
+    "video_name": null,
+    "completed_at": "2025-07-12T18:11:36.261649",
+    "video_path": "outputs/video_9d74d549-c9bd-41e9-9c86-aea7ddaaefcf.mp4",
+    "generation_metrics": {
+      "video_path": "outputs/video_9d74d549-c9bd-41e9-9c86-aea7ddaaefcf.mp4",
+      "total_clips": 4,
+      "successful_clips": 4,
+      "failed_clips": 0,
+      "success_rate": 1.0,
+      "pdf_path": "uploads/8f9d556a-1e39-4954-901c-50f5211a77ef_2507.07980v1.pdf",
+      "clips_config": [
+        {
+          "type": "manim",
+          "code": "class SimpleScene(Scene):\n    def construct(self):\n        title = Text('Touch Sensing Without Sensors', font_size=48).to_edge(UP)\n        self.play(Write(title))\n        self.wait(1)\n        robot = Square(color=BLUE, side_length=2).move_to(ORIGIN)\n        question = Text('?', font_size=72, color=RED).next_to(robot, RIGHT)\n        self.play(Create(robot), Write(question))\n        self.wait(2)",
+          "voice_over": "Current robots lack a crucial ability - the sense of touch. Adding touch sensors is expensive and complex. But what if robots could feel touch without any special sensors?"
+        },
+        {
+          "type": "manim",
+          "code": "class SimpleScene(Scene):\n    def construct(self):\n        title = Text('Using Built-in Joint Sensors', font_size=48).to_edge(UP)\n        self.play(Write(title))\n        self.wait(1)\n        circle = Circle(radius=1, color=BLUE).move_to(ORIGIN)\n        dots = VGroup(*[Dot(color=YELLOW) for _ in range(6)]).arrange_in_grid(3,2)\n        self.play(Create(circle), Create(dots))\n        self.wait(2)",
+          "voice_over": "UniTac uses the robot's existing joint sensors to detect touch. By analyzing changes in joint readings, we can determine where contact occurs on the robot's body."
+        },
+        {
+          "type": "manim",
+          "code": "class SimpleScene(Scene):\n    def construct(self):\n        title = Text('Contact Localization', font_size=48).to_edge(UP)\n        self.play(Write(title))\n        self.wait(1)\n        rect = Rectangle(height=3, width=2, color=BLUE).move_to(ORIGIN)\n        arrow = Arrow(start=LEFT*3, end=rect.get_left(), color=RED)\n        self.play(Create(rect), Create(arrow))\n        self.wait(2)",
+          "voice_over": "When someone touches the robot, the contact creates unique patterns in joint sensor readings. Our system processes these patterns to pinpoint the touch location within 8 centimeters."
+        },
+        {
+          "type": "manim",
+          "code": "class SimpleScene(Scene):\n    def construct(self):\n        title = Text('Enabling Natural Interaction', font_size=48).to_edge(UP)\n        self.play(Write(title))\n        self.wait(1)\n        circle1 = Circle(radius=0.5, color=BLUE).shift(LEFT*2)\n        circle2 = Circle(radius=0.5, color=BLUE).shift(RIGHT*2)\n        arrow = Arrow(circle1.get_right(), circle2.get_left(), color=GREEN)\n        self.play(Create(circle1), Create(circle2), Create(arrow))\n        self.wait(2)",
+          "voice_over": "This technology enables more natural human-robot interaction, allowing robots to respond to touch-based commands and physical guidance without additional hardware."
+        }
+      ]
+    }
+  },
+  "34c1b950-f602-40a5-b605-f844319fec13": {
+    "job_id": "34c1b950-f602-40a5-b605-f844319fec13",
+    "status": "completed",
+    "created_at": "2025-07-12T18:16:46.478114",
+    "pdf_source": "uploads/f9148bbb-10e5-401a-9093-df1764116e71_2507.07980v1.pdf",
+    "original_filename": "2507.07980v1.pdf",
+    "video_name": null,
+    "completed_at": "2025-07-12T18:18:11.415505",
+    "video_path": "outputs/video_34c1b950-f602-40a5-b605-f844319fec13.mp4",
+    "generation_metrics": {
+      "video_path": "outputs/video_34c1b950-f602-40a5-b605-f844319fec13.mp4",
+      "total_clips": 4,
+      "successful_clips": 4,
+      "failed_clips": 0,
+      "success_rate": 1.0,
+      "pdf_path": "uploads/f9148bbb-10e5-401a-9093-df1764116e71_2507.07980v1.pdf",
+      "clips_config": [
+        {
+          "type": "manim",
+          "code": "class SimpleScene(Scene):\n    def construct(self):\n        title = Text('UniTac: Touch Sensing Without Sensors', font_size=48).to_edge(UP)\n        self.play(Write(title))\n        self.wait(1)\n        robot = Square(color=BLUE, side_length=2).move_to(ORIGIN)\n        question = Text('?', font_size=72, color=RED).next_to(robot, RIGHT)\n        self.play(Create(robot), FadeIn(question))\n        self.wait(2)",
+          "voice_over": "Current robots lack a critical ability - the sense of touch. While humans and animals can naturally feel contact, most robots cannot detect when and where they're being touched."
+        },
+        {
+          "type": "manim",
+          "code": "class SimpleScene(Scene):\n    def construct(self):\n        title = Text('Using Built-in Joint Sensors', font_size=48).to_edge(UP)\n        self.play(Write(title))\n        self.wait(1)\n        circle = Circle(radius=1, color=BLUE).move_to(ORIGIN)\n        dots = VGroup(*[Dot(color=YELLOW) for _ in range(4)]).arrange_in_grid(2,2, buff=1)\n        self.play(Create(circle), Create(dots))\n        self.wait(2)",
+          "voice_over": "UniTac uses the robot's existing joint sensors to detect touch, without requiring any additional hardware. It works by analyzing subtle changes in joint readings when contact occurs."
+        },
+        {
+          "type": "manim",
+          "code": "class SimpleScene(Scene):\n    def construct(self):\n        title = Text('How UniTac Works', font_size=48).to_edge(UP)\n        self.play(Write(title))\n        self.wait(1)\n        rect = Rectangle(height=2, width=3, color=BLUE).move_to(ORIGIN)\n        arrow = Arrow(start=LEFT*3, end=RIGHT*3, color=GREEN)\n        self.play(Create(rect), Create(arrow))\n        self.wait(2)",
+          "voice_over": "When someone touches the robot, it creates unique patterns in the joint sensor readings. A neural network analyzes these patterns to determine the exact location of contact."
+        },
+        {
+          "type": "manim",
+          "code": "class SimpleScene(Scene):\n    def construct(self):\n        title = Text('Making Robots More Interactive', font_size=48).to_edge(UP)\n        self.play(Write(title))\n        self.wait(1)\n        circle1 = Circle(radius=0.5, color=BLUE).shift(LEFT*2)\n        circle2 = Circle(radius=0.5, color=BLUE).shift(RIGHT*2)\n        arrow = Arrow(circle1.get_right(), circle2.get_left(), color=GREEN)\n        self.play(Create(circle1), Create(circle2), Create(arrow))\n        self.wait(2)",
+          "voice_over": "This breakthrough enables more natural human-robot interaction, allowing robots to respond to touch-based commands and better understand physical contact with their environment."
+        }
+      ]
+    }
   }
 }

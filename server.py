@@ -318,6 +318,9 @@ async def serve_frontend():
             
             <div class="upload-section">
                 <h3>📄 Upload PDF or Enter URL</h3>
+                <p style="color: #666; font-size: 14px; margin-bottom: 15px;">
+                    🎬 Videos now include a beautiful Veo-generated "Thank You" ending!
+                </p>
                 
                 <div class="upload-area" onclick="document.getElementById('fileInput').click()">
                     <div id="uploadText">

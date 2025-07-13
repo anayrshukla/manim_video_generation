@@ -65,7 +65,9 @@ async def generate_manim_video(code: str, output_dir: str = "output", clip_name:
             "-o", output_dir,
             "--media_dir", output_dir,
             "-v", "WARNING",  # Reduce verbosity
-            f"-q{quality_flag}"  # Quality flag: -ql (low), -qm (medium), -qh (high)
+            f"-q{quality_flag}",  # Quality flag: -ql (low), -qm (medium), -qh (high)
+            "--resolution", "1280,720",  # Match Veo's 720p resolution
+            "--frame_rate", "24"  # Match Veo's 24fps
         ]
         
         print(f"Running Manim command: {' '.join(cmd)}")
