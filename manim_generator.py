@@ -28,12 +28,27 @@ async def generate_manim_video(code: str, output_dir: str = "output", clip_name:
     if not clip_name:
         clip_name = f"clip_{hash(code) % 10000}"
     
+    # Validate and clean the code
+    if "class SimpleScene" not in code:
+        print(f"Warning: Code doesn't contain 'class SimpleScene', attempting to fix...")
+        # Try to fix common class name issues
+        code = code.replace("class Scene", "class SimpleScene")
+        if "class SimpleScene" not in code:
+            print(f"Error: Could not fix class name in code")
+            return None
+    
     # Create temporary Python file with the Manim code
     with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as temp_file:
-        # Always include default imports
+        # Always include default imports and ensure clean code
         full_code = "from manim import *\nimport numpy as np\n\n" + code
         temp_file.write(full_code)
         temp_file_path = temp_file.name
+        
+        # Debug: Print the code being executed
+        print(f"Generated Manim code for {clip_name}:")
+        print("=" * 50)
+        print(full_code)
+        print("=" * 50)
     
     try:
         # Run Manim command asynchronously
@@ -46,6 +61,7 @@ async def generate_manim_video(code: str, output_dir: str = "output", clip_name:
         cmd = [
             "manim",
             temp_file_path,
+            "SimpleScene",  # Specify the exact scene class to render
             "-o", output_dir,
             "--media_dir", output_dir,
             "-v", "WARNING",  # Reduce verbosity

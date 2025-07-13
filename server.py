@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import Dict, Optional
 import asyncio
 import weave
+import fitz  # PyMuPDF for PDF compression
 
 # Import our video generation pipeline
 from video_generator import generate_summary_video, generate_summary_video_upload
@@ -78,6 +79,114 @@ def update_job_status(job_id: str, status: str, **kwargs):
         for key, value in kwargs.items():
             jobs[job_id][key] = value
         save_jobs(jobs)
+
+def compress_pdf(input_path: str, output_path: str, target_size_mb: float = 2.5) -> str:
+    """
+    Compress PDF to reduce file size while maintaining readability.
+    Returns the output path of the compressed PDF.
+    """
+    try:
+        # Open the original PDF
+        doc = fitz.open(input_path)
+        
+        # Create a new PDF with compression settings
+        compressed_doc = fitz.open()  # New empty document
+        
+        for page_num in range(len(doc)):
+            page = doc[page_num]
+            
+            # Reduce image quality and resolution for compression
+            # Get page as pixmap with lower resolution
+            mat = fitz.Matrix(0.8, 0.8)  # 80% scale to reduce size
+            pix = page.get_pixmap(matrix=mat, alpha=False)
+            
+            # Convert to image bytes with compression
+            img_data = pix.tobytes("jpeg", jpg_quality=75)  # 75% JPEG quality
+            
+            # Create new page and insert compressed image
+            new_page = compressed_doc.new_page(width=page.rect.width, height=page.rect.height)
+            new_page.insert_image(new_page.rect, stream=img_data)
+        
+        # Save with additional compression options
+        compressed_doc.save(
+            output_path,
+            garbage=4,  # Garbage collection level (max compression)
+            deflate=True,  # Use deflate compression
+            clean=True,    # Clean unused objects
+            linear=True    # Linearize for web optimization
+        )
+        
+        # Clean up
+        doc.close()
+        compressed_doc.close()
+        pix = None
+        
+        # Check if compression was successful
+        if os.path.exists(output_path):
+            original_size = os.path.getsize(input_path)
+            compressed_size = os.path.getsize(output_path)
+            compression_ratio = compressed_size / original_size
+            
+            print(f"📦 PDF compressed: {original_size/1024/1024:.1f}MB → {compressed_size/1024/1024:.1f}MB ({compression_ratio:.1%})")
+            
+            # If still too large, try more aggressive compression
+            if compressed_size > target_size_mb * 1024 * 1024:
+                print(f"🔄 File still too large, trying aggressive compression...")
+                return compress_pdf_aggressive(input_path, output_path, target_size_mb)
+            
+            return output_path
+        else:
+            raise Exception("Compression failed - output file not created")
+            
+    except Exception as e:
+        print(f"❌ PDF compression failed: {e}")
+        # Return original file if compression fails
+        return input_path
+
+def compress_pdf_aggressive(input_path: str, output_path: str, target_size_mb: float = 2.5) -> str:
+    """
+    More aggressive PDF compression by converting to lower resolution images.
+    """
+    try:
+        doc = fitz.open(input_path)
+        compressed_doc = fitz.open()
+        
+        for page_num in range(len(doc)):
+            page = doc[page_num]
+            
+            # Very aggressive scaling and quality reduction
+            mat = fitz.Matrix(0.6, 0.6)  # 60% scale
+            pix = page.get_pixmap(matrix=mat, alpha=False)
+            
+            # Lower JPEG quality for maximum compression
+            img_data = pix.tobytes("jpeg", jpg_quality=50)  # 50% JPEG quality
+            
+            new_page = compressed_doc.new_page(width=page.rect.width, height=page.rect.height)
+            new_page.insert_image(new_page.rect, stream=img_data)
+        
+        # Save with maximum compression
+        compressed_doc.save(
+            output_path,
+            garbage=4,
+            deflate=True,
+            clean=True,
+            linear=True
+        )
+        
+        doc.close()
+        compressed_doc.close()
+        pix = None
+        
+        if os.path.exists(output_path):
+            compressed_size = os.path.getsize(output_path)
+            print(f"📦 Aggressive compression: {compressed_size/1024/1024:.1f}MB")
+            return output_path
+        else:
+            return input_path
+            
+    except Exception as e:
+        print(f"❌ Aggressive compression failed: {e}")
+        return input_path
 
 @weave.op()
 async def process_video_generation(job_id: str, pdf_source: str, is_upload: bool = False):
@@ -214,6 +323,7 @@ async def serve_frontend():
                     <div id="uploadText">
                         <h4>📁 Click to Upload PDF</h4>
                         <p>Or drag and drop a PDF file here</p>
+                        <small style="color: #888; margin-top: 10px; display: block;">Large files will be automatically compressed</small>
                     </div>
                 </div>
                 <input type="file" id="fileInput" accept=".pdf">
@@ -436,23 +546,64 @@ async def generate_video_upload(
     # Read file content to check size
     content = await file.read()
     
-    # Check file size (Claude API has limits, ~5MB encoded is too large)
-    if len(content) > 3 * 1024 * 1024:  # 3MB limit for safety
-        raise HTTPException(
-            status_code=400, 
-            detail="PDF file is too large (max 3MB). Please try a smaller file or use a URL instead."
-        )
-    
     # Create uploads directory
     os.makedirs("uploads", exist_ok=True)
     
     # Generate unique filename
     file_id = str(uuid.uuid4())
-    file_path = f"uploads/{file_id}_{file.filename}"
+    original_file_path = f"uploads/{file_id}_{file.filename}"
     
     # Save uploaded file
-    with open(file_path, "wb") as f:
+    with open(original_file_path, "wb") as f:
         f.write(content)
+    
+    # Check file size and compress if necessary
+    file_size_mb = len(content) / (1024 * 1024)
+    print(f"📄 Uploaded PDF: {file.filename} ({file_size_mb:.1f}MB)")
+    
+    final_file_path = original_file_path
+    
+    if file_size_mb > 2.5:  # Compress if larger than 2.5MB
+        print(f"🔄 File is {file_size_mb:.1f}MB, compressing to reduce API load...")
+        compressed_file_path = f"uploads/{file_id}_compressed_{file.filename}"
+        
+        try:
+            final_file_path = compress_pdf(original_file_path, compressed_file_path, target_size_mb=2.5)
+            
+            # Check final size
+            if os.path.exists(final_file_path):
+                final_size = os.path.getsize(final_file_path) / (1024 * 1024)
+                
+                # If compression was successful and file is smaller
+                if final_file_path != original_file_path and final_size < file_size_mb:
+                    print(f"✅ Using compressed version: {final_size:.1f}MB")
+                    # Remove original large file to save space
+                    if os.path.exists(original_file_path):
+                        os.remove(original_file_path)
+                else:
+                    print(f"⚠️  Compression didn't help much, using original")
+                    final_file_path = original_file_path
+                    # Remove failed compression attempt
+                    if os.path.exists(compressed_file_path):
+                        os.remove(compressed_file_path)
+                
+                # Final check - if still too large for Claude API
+                if final_size > 5.0:  # 5MB absolute limit for Claude
+                    raise HTTPException(
+                        status_code=400, 
+                        detail=f"PDF is too large even after compression ({final_size:.1f}MB). Please try a smaller file or use a URL instead."
+                    )
+            else:
+                print(f"⚠️  Compression failed, using original file")
+                final_file_path = original_file_path
+                
+        except Exception as e:
+            print(f"⚠️  Compression error: {e}, using original file")
+            final_file_path = original_file_path
+            # Remove failed compression attempt
+            compressed_file_path_check = f"uploads/{file_id}_compressed_{file.filename}"
+            if os.path.exists(compressed_file_path_check):
+                os.remove(compressed_file_path_check)
     
     # Generate job ID
     job_id = str(uuid.uuid4())
@@ -462,7 +613,7 @@ async def generate_video_upload(
         "job_id": job_id,
         "status": "pending",
         "created_at": datetime.now().isoformat(),
-        "pdf_source": file_path,
+        "pdf_source": final_file_path,
         "original_filename": file.filename,
         "video_name": None
     }
@@ -475,7 +626,7 @@ async def generate_video_upload(
     background_tasks.add_task(
         process_video_generation,
         job_id,
-        file_path,
+        final_file_path,
         True  # is_upload = True
     )
     

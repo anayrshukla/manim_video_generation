@@ -14,52 +14,74 @@ client = anthropic.Anthropic(
     api_key=API_KEY
 )
 
-prompt = """You are an expert educational content creator like 3Blue1Brown. 
-From this research paper, generate a JSON object for a 45-60 second educational video that breaks down the key concepts step by step.
+prompt = """You are creating a simple, clean educational video from this research paper. 
+Generate a JSON for a 45-60 second video with exactly 4 clips that are visually clean and easy to follow.
 
-Create exactly 4-5 clips that together form a complete mini-lesson:
+CRITICAL LAYOUT RULES:
+- Title text always goes at the TOP (y=2.5 to 3)
+- Main content in CENTER (y=-0.5 to 1.5)  
+- Simple shapes ONLY in the center, never overlapping text
+- Keep animations MINIMAL and SMOOTH
+- Use clear spacing between elements
 
-TIMING & STRUCTURE:
-- Total duration: 45-60 seconds
-- Clip 1 (10-12s): Introduction/Hook - What problem does this solve?
-- Clip 2 (10-12s): Core Concept - The main idea explained simply
-- Clip 3 (10-12s): How It Works - The mechanism/process
-- Clip 4 (10-12s): Impact/Results - Why it matters
-- Clip 5 (optional, 5-8s): Quick summary/takeaway
+CLIP STRUCTURE (exactly 4 clips):
+1. Introduction (12s): Present the problem/topic
+2. Core Concept (12s): Main idea with simple visual
+3. Key Mechanism (12s): How it works (basic shapes/arrows)
+4. Impact/Result (12s): Why it matters
 
-EDUCATIONAL REQUIREMENTS:
-- Start with a hook that grabs attention
-- Build concepts progressively (simple → complex)
-- Use analogies and visual metaphors
-- End with clear impact/significance
-- Make it accessible but not dumbed down
+VISUAL DESIGN CONSTRAINTS:
+- Only use: Circle, Square, Rectangle, Text, Arrow, Line, Dot
+- Colors: BLUE, RED, GREEN, YELLOW, WHITE (pick 2-3 max per clip)
+- NO complex animations - just FadeIn, FadeOut, Create, Write
+- NO moving text - text stays in position once placed
+- Simple geometric shapes only - no complex drawings
+- Clear visual hierarchy: title → content → simple illustration
 
-TECHNICAL CONSTRAINTS:
-- Only use basic Manim objects: Circle, Square, Rectangle, Line, Arrow, Dot, Text
-- DO NOT use SVGMobject, DecimalNumber, or LaTeX-dependent objects
-- DO NOT reference external files (.svg, .png, .jpg)
-- Use built-in colors: RED, BLUE, GREEN, YELLOW, WHITE, ORANGE, PURPLE
-- Keep animations smooth and purposeful
+CODE TEMPLATE TO FOLLOW:
+```python
+class SimpleScene(Scene):
+    def construct(self):
+        # Title at top (never moves)
+        title = Text("Clear Title Here", font_size=48).to_edge(UP)
+        self.play(Write(title))
+        self.wait(1)
+        
+        # Simple visual in center (basic shapes only)  
+        shape = Circle(radius=1, color=BLUE).move_to(ORIGIN)
+        self.play(Create(shape))
+        self.wait(2)
+        
+        # Optional simple text below center
+        subtitle = Text("Key point", font_size=36).shift(DOWN*2)
+        self.play(FadeIn(subtitle))
+        self.wait(3)
+        
+        # Always end with this
+        self.wait(1)
+```
+
+CRITICAL CODE REQUIREMENTS:
+- Class name must be exactly "SimpleScene"
+- Always start with a title using Text().to_edge(UP)
+- Use self.wait() between animations (minimum 1 second)
+- Maximum 3 objects per scene (title + 2 others)
+- Keep total animation time to exactly 12 seconds
+- End every scene with self.wait(1)
 
 VOICE-OVER STYLE:
-- Conversational but authoritative
-- Clear, concise explanations
+- Conversational and clear
+- Match the visual timing
+- 2-3 sentences per clip maximum
 - Natural pacing with pauses
-- Connect each clip to the next
 
-Example structure:
-Clip 1: "Imagine you're trying to [relatable problem]..."
-Clip 2: "Here's the key insight: [main concept]..."
-Clip 3: "The way this works is [mechanism]..."
-Clip 4: "This breakthrough means [impact]..."
-
-Return ONLY this JSON (no other text):
+Return ONLY this JSON (no markdown, no explanation):
 {
     "clips": [
         {
-            "type": "manim",
-            "code": "class SceneN(Scene):\n    def construct(self):\n        # 10-12 second animation",
-            "voice_over": "Educational narration that flows naturally"
+            "type": "manim", 
+            "code": "class SimpleScene(Scene):\n    def construct(self):\n        # Simple, clean animation following the template exactly\n        title = Text('Topic Title', font_size=48).to_edge(UP)\n        self.play(Write(title))\n        self.wait(1)\n        # Add 1-2 more simple elements here\n        self.wait(1)",
+            "voice_over": "Clear, concise narration matching the 12-second timing"
         }
     ]
 }

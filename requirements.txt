@@ -13,4 +13,5 @@ certifi
 aiohttp
 fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
-python-multipart>=0.0.6 
+python-multipart>=0.0.6
+pymupdf>=1.23.0 
