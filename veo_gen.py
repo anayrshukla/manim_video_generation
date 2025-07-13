@@ -8,8 +8,8 @@ from pathlib import Path
 @weave.op()
 def generate_veo_thank_you_clip(output_path: str = "thank_you_clip.mp4") -> str:
     """
-    Generate a 2-second 'thank you' video clip using Google Veo API.
-    Falls back to Manim if Veo fails.
+    Generate a 3-4 second thank you visualization clip using Google Veo API.
+    Creates an engaging visual ending for the video.
     
     Args:
         output_path: Path where the generated video will be saved
@@ -21,7 +21,7 @@ def generate_veo_thank_you_clip(output_path: str = "thank_you_clip.mp4") -> str:
     # Try Google Veo API (official)
     google_api_key = os.getenv("GOOGLE_API_KEY")
     if google_api_key and google_api_key != "your_google_api_key_here":
-        print("🌟 Using Google Veo API (official)...")
+        print("🌟 Using Google Veo API for thank you visualization...")
         result = generate_veo_gemini_thank_you_clip(output_path)
         if result:
             return result
@@ -29,44 +29,49 @@ def generate_veo_thank_you_clip(output_path: str = "thank_you_clip.mp4") -> str:
     else:
         print("🔑 No Google API key found, using Manim fallback...")
     
-    # Fallback to Manim-generated "Thank You" 
+    # Fallback to Manim-generated thank you
     return create_fallback_thank_you_clip(output_path)
 
 @weave.op()
 def create_fallback_thank_you_clip(output_path: str) -> str:
     """
-    Create a simple 'Thank You' clip using Manim as fallback if Veo fails.
+    Create a simple thank you clip using Manim as fallback if Veo fails.
     """
     try:
-        print("🔄 Creating fallback 'Thank You' clip with Manim...")
+        print("🔄 Creating fallback thank you clip with Manim...")
         
-        fallback_code = '''
+        fallback_code = f'''
 from manim import *
 
 class SimpleScene(Scene):
     def construct(self):
-        # Create beautiful "Thank You" text
-        thank_you = Text("Thank You", font_size=72, color=BLUE)
-        thank_you.move_to(ORIGIN)
+        # Create thank you title
+        title = Text("Thank You", font_size=48, color=WHITE)
+        title.to_edge(UP)
         
-        # Add subtle decoration
-        underline = Line(
-            start=thank_you.get_corner(DL) + DOWN*0.3,
-            end=thank_you.get_corner(DR) + DOWN*0.3,
-            color=GOLD
-        )
+        # Create subtitle
+        subtitle = Text("For Watching", font_size=36, color=BLUE)
+        subtitle.move_to(ORIGIN)
         
-        # Animate the appearance (exactly 2 seconds total)
+        # Add visual elements
+        circle = Circle(radius=1.5, color=BLUE, fill_opacity=0.1)
+        circle.move_to(ORIGIN)
+        
+        # Animate the thank you (exactly 3.5 seconds total)
+        self.play(Write(title, run_time=0.8))
+        self.wait(0.2)
+        
         self.play(
-            Write(thank_you, run_time=0.8),
-            Create(underline, run_time=0.8)
+            Create(circle, run_time=1),
+            FadeIn(subtitle, run_time=1)
         )
-        self.wait(0.4)
+        self.wait(1)
         
-        # Fade out
+        # Quick fade transition
         self.play(
-            FadeOut(thank_you, run_time=0.5),
-            FadeOut(underline, run_time=0.5)
+            FadeOut(title, run_time=0.25),
+            FadeOut(subtitle, run_time=0.25),
+            FadeOut(circle, run_time=0.25)
         )
 '''
         
@@ -138,7 +143,8 @@ class SimpleScene(Scene):
 @weave.op()
 def generate_veo_gemini_thank_you_clip(output_path: str = "thank_you_clip.mp4") -> str:
     """
-    Generate thank you clip using official Google Gemini API (requires Google AI API key).
+    Generate thank you visualization clip using official Google Gemini API.
+    Creates an engaging visual ending for the video.
     """
     try:
         print("🔄 Importing Google Gen AI SDK...")
@@ -151,14 +157,21 @@ def generate_veo_gemini_thank_you_clip(output_path: str = "thank_you_clip.mp4") 
         # Initialize client (automatically uses GOOGLE_API_KEY environment variable)
         client = genai.Client()
         
-        # Professional "thank you" prompts for variety
-        thank_you_prompts = [
-            "Clean elegant 'Thank You' text animation appearing on white background, professional sans-serif typography, gentle fade-in effect, 2 seconds duration, minimalist design",
-            "Modern 'Thank You' text in deep blue color with subtle glow materializing on pristine white backdrop, corporate style, smooth animation, 2 seconds",
-            "Professional 'Thank You' typography with golden accent color, appearing with soft scale animation on clean background, premium feel, 2 seconds duration"
-        ]
+        # Create thank you prompts
+        def create_thank_you_prompts():
+            """Generate engaging visual prompts for thank you ending"""
+            
+            thank_you_prompts = [
+                "Elegant thank you message with flowing particles and gentle animations, professional academic style, exactly 3 seconds duration",
+                "Abstract thank you visualization with geometric shapes forming a thank you message, clean modern aesthetic, exactly 3 seconds duration",
+                "Thank you text with subtle background animation and soft lighting effects, professional presentation style, exactly 3 seconds duration",
+                "Minimalist thank you design with animated typography and smooth transitions, elegant academic finish, exactly 3 seconds duration"
+            ]
+            
+            return thank_you_prompts
         
         import random
+        thank_you_prompts = create_thank_you_prompts()
         prompt = random.choice(thank_you_prompts)
         
         print(f"📝 Using prompt: {prompt}")
@@ -166,7 +179,7 @@ def generate_veo_gemini_thank_you_clip(output_path: str = "thank_you_clip.mp4") 
         print("🚀 Starting Google Veo generation...")
         operation = client.models.generate_videos(
             model="veo-2.0-generate-001",
-            prompt=prompt,
+            prompt="Generate exactly 3 seconds of video for a thank you ending with the following prompt: " + prompt,
             config=types.GenerateVideosConfig(
                 aspect_ratio="16:9",
                 person_generation="dont_allow"

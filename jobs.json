@@ -247,5 +247,45 @@
         }
       ]
     }
+  },
+  "4e5ec89d-be50-4485-b668-9eae78fe61be": {
+    "job_id": "4e5ec89d-be50-4485-b668-9eae78fe61be",
+    "status": "completed",
+    "created_at": "2025-07-12T18:52:00.475523",
+    "pdf_source": "uploads/a174e4bd-b7fc-44df-b3a9-4c4cd7ba135f_2507.07980v1.pdf",
+    "original_filename": "2507.07980v1.pdf",
+    "video_name": null,
+    "completed_at": "2025-07-12T18:53:23.683777",
+    "video_path": "outputs/video_4e5ec89d-be50-4485-b668-9eae78fe61be.mp4",
+    "generation_metrics": {
+      "video_path": "outputs/video_4e5ec89d-be50-4485-b668-9eae78fe61be.mp4",
+      "total_clips": 4,
+      "successful_clips": 4,
+      "failed_clips": 0,
+      "success_rate": 1.0,
+      "pdf_path": "uploads/a174e4bd-b7fc-44df-b3a9-4c4cd7ba135f_2507.07980v1.pdf",
+      "clips_config": [
+        {
+          "type": "manim",
+          "code": "class SimpleScene(Scene):\n    def construct(self):\n        title = Text('UniTac: Touch Sensing Without Sensors', font_size=48).to_edge(UP)\n        self.play(Write(title))\n        self.wait(1)\n        robot = Square(color=BLUE, side_length=2)\n        question = Text('?', font_size=72, color=RED).next_to(robot)\n        self.play(Create(robot), FadeIn(question))\n        self.wait(2)",
+          "voice_over": "Most robots today can't feel touch because they lack expensive tactile sensors. But what if robots could sense touch using only their built-in joint sensors?"
+        },
+        {
+          "type": "manim",
+          "code": "class SimpleScene(Scene):\n    def construct(self):\n        title = Text('Joint Sensors to Touch Location', font_size=48).to_edge(UP)\n        self.play(Write(title))\n        self.wait(1)\n        robot = Rectangle(height=3, width=2, color=BLUE)\n        dot = Dot(color=RED).move_to(robot.get_right())\n        self.play(Create(robot), Create(dot))\n        self.wait(2)",
+          "voice_over": "UniTac uses data from existing joint sensors to determine where contact occurs on the robot's body, without needing any additional hardware."
+        },
+        {
+          "type": "manim",
+          "code": "class SimpleScene(Scene):\n    def construct(self):\n        title = Text('How UniTac Works', font_size=48).to_edge(UP)\n        self.play(Write(title))\n        self.wait(1)\n        arrow1 = Arrow(LEFT*3, ORIGIN, color=BLUE)\n        arrow2 = Arrow(ORIGIN, RIGHT*3, color=GREEN)\n        text1 = Text('Joint Data', font_size=36).next_to(arrow1, UP)\n        text2 = Text('Contact Point', font_size=36).next_to(arrow2, UP)\n        self.play(Create(arrow1), Create(arrow2), Write(text1), Write(text2))\n        self.wait(2)",
+          "voice_over": "The system analyzes patterns in joint sensor readings to predict the exact location where contact occurs, processing this data in real-time."
+        },
+        {
+          "type": "manim",
+          "code": "class SimpleScene(Scene):\n    def construct(self):\n        title = Text('Enabling Natural Robot Interaction', font_size=48).to_edge(UP)\n        self.play(Write(title))\n        self.wait(1)\n        circle = Circle(radius=1.5, color=BLUE)\n        text = Text('7-8cm accuracy', font_size=36).next_to(circle, DOWN)\n        self.play(Create(circle), FadeIn(text))\n        self.wait(2)",
+          "voice_over": "With UniTac, robots can now sense touch with 7-8 centimeter accuracy, enabling more natural human-robot interaction without expensive hardware modifications."
+        }
+      ]
+    }
   }
 }
