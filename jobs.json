@@ -1,0 +1,51 @@
+{
+  "d510bb22-641a-4717-a916-0e9eeb50b470": {
+    "job_id": "d510bb22-641a-4717-a916-0e9eeb50b470",
+    "status": "failed",
+    "created_at": "2025-07-12T17:09:32.092509",
+    "pdf_source": "uploads/ab374ecc-17e7-4316-b1f2-7e400f5dbd9f_2507.07980v1.pdf",
+    "original_filename": "2507.07980v1.pdf",
+    "video_name": null,
+    "error": "Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'An unexpected error occurred. Please try again later.'}}"
+  },
+  "62793b6a-b4a9-44bd-be3e-8d89d1c2d56c": {
+    "job_id": "62793b6a-b4a9-44bd-be3e-8d89d1c2d56c",
+    "status": "completed",
+    "created_at": "2025-07-12T17:14:57.583890",
+    "pdf_source": "https://arxiv.org/pdf/2507.07980",
+    "quality": "medium_quality",
+    "video_name": null,
+    "completed_at": "2025-07-12T17:15:31.514120",
+    "video_path": "outputs/video_62793b6a-b4a9-44bd-be3e-8d89d1c2d56c.mp4",
+    "generation_metrics": {
+      "video_path": "outputs/video_62793b6a-b4a9-44bd-be3e-8d89d1c2d56c.mp4",
+      "total_clips": 4,
+      "successful_clips": 4,
+      "failed_clips": 0,
+      "success_rate": 1.0,
+      "pdf_url": "https://arxiv.org/pdf/2507.07980",
+      "clips_config": [
+        {
+          "type": "manim",
+          "code": "class Scene1(Scene):\n    def construct(self):\n        robot = Rectangle(height=2, width=1, color=YELLOW)\n        touch = Dot(color=RED)\n        sensor = Text('Tactile Sensors: $1000+').scale(0.5)\n        x = Text('X').scale(2)\n        self.play(Create(robot))\n        self.play(Create(touch), Write(sensor))\n        self.play(Create(x), FadeOut(sensor))\n        self.play(Write(Text('What if robots could feel touch...without sensors?').scale(0.7)))",
+          "voice_over": "Robots need to feel touch to interact naturally with humans. But adding touch sensors is expensive and complex. What if there was a better way?"
+        },
+        {
+          "type": "manim",
+          "code": "class Scene2(Scene):\n    def construct(self):\n        robot = Rectangle(height=2, width=1, color=YELLOW)\n        joints = [Dot(color=BLUE) for _ in range(3)]\n        arrows = [Arrow(joints[i], joints[i+1], color=WHITE) for i in range(2)]\n        brain = Circle(color=GREEN).scale(0.5).next_to(robot, UP)\n        self.play(Create(robot), *[Create(j) for j in joints], *[Create(a) for a in arrows])\n        self.play(Create(brain), Write(Text('Joint Sensors \u2192 Touch Location').scale(0.6)))",
+          "voice_over": "UniTac uses the robot's existing joint sensors to detect touch. Like how you can tell where something touches your arm just by feeling how your muscles and joints react."
+        },
+        {
+          "type": "manim",
+          "code": "class Scene3(Scene):\n    def construct(self):\n        neural = Rectangle(width=3, height=2, color=PURPLE)\n        data = [Dot(color=BLUE) for _ in range(6)]\n        output = Dot(color=RED)\n        arrows = [Arrow(d, output, color=WHITE) for d in data]\n        self.play(Create(neural), *[Create(d) for d in data])\n        self.play(*[Create(a) for a in arrows], Create(output))\n        self.play(Write(Text('7-8cm accuracy').scale(0.6).next_to(neural, DOWN)))",
+          "voice_over": "A neural network learns patterns in joint sensor data to pinpoint touch location within 7-8 centimeters - all without any additional hardware."
+        },
+        {
+          "type": "manim",
+          "code": "class Scene4(Scene):\n    def construct(self):\n        robot = Rectangle(height=2, width=1, color=YELLOW)\n        human = Circle(color=BLUE).shift(LEFT*2)\n        touch = Dot(color=RED)\n        arrow = Arrow(human, robot)\n        text = Text('Natural Interaction').scale(0.7)\n        self.play(Create(robot), Create(human))\n        self.play(Create(arrow), Create(touch))\n        self.play(Write(text))",
+          "voice_over": "This breakthrough makes human-robot interaction more natural and accessible - enabling robots to respond to touch just like animals do, at a fraction of the cost."
+        }
+      ]
+    }
+  }
+}

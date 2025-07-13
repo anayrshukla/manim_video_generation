@@ -75,6 +75,99 @@ def stitch_videos(video_paths: list, output_path: str = "summary_video.mp4") -> 
 
 
 @weave.op()
+async def generate_summary_video_upload(pdf_path: str) -> dict:
+    """Generate a 1-minute summary video from an uploaded PDF file."""
+    print(f"📄 Processing uploaded PDF: {pdf_path}")
+    
+    # Generate video config from PDF using base64 encoding
+    response = generate_video_config(pdf_path, use_base64=True)
+    config_text = response.content[0].text
+    
+    # Parse JSON config
+    try:
+        config = json.loads(config_text)
+    except json.JSONDecodeError:
+        import re
+        json_match = re.search(r'\{.*\}', config_text, re.DOTALL)
+        if json_match:
+            config = json.loads(json_match.group())
+        else:
+            raise ValueError("Could not parse video configuration")
+    
+    clips = config.get("clips", [])
+    if not clips:
+        raise ValueError("No clips generated from PDF")
+    
+    # Limit to ~1 minute (take first few clips)
+    max_clips = min(len(clips), 4)  # Roughly 4 clips for 1 minute
+    clips = clips[:max_clips]
+    
+    print(f"🎬 Generating {len(clips)} video clips...")
+    
+    # Generate Manim videos
+    output_dir = "clips"
+    os.makedirs(output_dir, exist_ok=True)
+    
+    video_paths = await generate_manim_clips(clips, output_dir, "medium_quality")
+    
+    # Track video generation metrics
+    successful_clips = 0
+    failed_clips = 0
+    
+    # Add voice-over to each clip (with fallback to silent video)
+    final_clips = []
+    for i, (clip_config, video_path) in enumerate(zip(clips, video_paths)):
+        if video_path:
+            # Try to generate voice-over, but continue if it fails
+            try:
+                if clip_config.get('voice_over'):
+                    audio_path = f"{output_dir}/audio_{i}.wav"
+                    audio_result = await generate_voice(clip_config['voice_over'], audio_path)
+                    
+                    if audio_result and os.path.exists(audio_result):
+                        final_path = f"{output_dir}/final_{i}.mp4"
+                        combined_path = combine_video_with_audio_sync(video_path, audio_path, final_path)
+                        final_clips.append(combined_path)
+                        successful_clips += 1
+                        print(f"✓ Clip {i+1} with voice-over")
+                    else:
+                        final_clips.append(video_path)
+                        successful_clips += 1
+                        print(f"✓ Clip {i+1} (silent - voice failed)")
+                else:
+                    final_clips.append(video_path)
+                    successful_clips += 1
+                    print(f"✓ Clip {i+1} (silent)")
+            except Exception as e:
+                print(f"Voice generation failed for clip {i+1}: {e}")
+                final_clips.append(video_path)
+                successful_clips += 1
+                print(f"✓ Clip {i+1} (silent - voice failed)")
+        else:
+            failed_clips += 1
+            print(f"✗ Clip {i+1} failed to generate")
+    
+    if not final_clips:
+        raise ValueError("No clips were successfully generated")
+    
+    # Stitch all clips together
+    final_video = stitch_videos(final_clips, "summary_video.mp4")
+    
+    print(f"✅ Summary video created: {final_video}")
+    
+    # Return comprehensive results for Weave tracking
+    return {
+        "video_path": final_video,
+        "total_clips": len(clips),
+        "successful_clips": successful_clips,
+        "failed_clips": failed_clips,
+        "success_rate": successful_clips / len(clips) if clips else 0,
+        "pdf_path": pdf_path,
+        "clips_config": clips
+    }
+
+
+@weave.op()
 async def generate_summary_video(pdf_url: str) -> dict:
     """Generate a 1-minute summary video from a PDF URL."""
     print(f"📄 Processing PDF: {pdf_url}")
@@ -169,8 +262,13 @@ async def generate_summary_video(pdf_url: str) -> dict:
 
 def main():
     """Simple main function - just ask for URL and generate video."""
-    # Initialize Weave tracking
-    weave.init("manim_video_generator")
+    # Initialize Weave tracking (with fallback)
+    try:
+        weave.init("manim_video_generator")
+        print("✅ W&B Weave tracking initialized")
+    except Exception as e:
+        print(f"⚠️  W&B Weave not available: {e}")
+        print("📊 Running without tracking")
     
     print("🎬 PDF to Video Summary Generator")
     print("=" * 40)
